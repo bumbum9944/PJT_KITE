@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kite.member">
+	<delete id="delete" parameterType="Member">
+		delete
+		from
+		members
+		where
+		email=#{email}
+	</delete>
+	<insert id="insert" parameterType="Member">
+		insert into
+		members(email,pw,lastname,firstname,birthday,gender,area,job,company,image)
+		values
+		(#{email}, #{pw}, #{lastname}, #{firstname}, #{birthday},
+		#{gender}, #{area},
+		#{job}, #{company}, #{image})
+	</insert>
+	
+	<select id="selectid" parameterType="Member"
+		resultType="Member">
+		select *
+		from members
+		where memberid=#{memberid}
+	</select>
+	
+	
+	<select id="selectOne" parameterType="Member"
+		resultType="Member">
+		select *
+		from members
+		where email=#{email}
+	</select>
+	<select id="selectList" resultType="Member">
+		select *
+		from members
+	</select>
+	<select id="login" parameterType="Member" resultType="Member">
+		select *
+		from members
+		where email=#{email} and pw=#{pw}
+	</select>
+	<update id="update" parameterType="Member">
+		update
+		members
+		set
+		email=#{email}, pw=#{pw}, lastname=#{lastname},
+		firstname=#{firstname}, birthday=#{birthday}, gender=#{gender},
+		area=#{area}, job=#{job}, company=#{company}, image=#{image}
+		where
+		memberid=#{memberid}
+	</update>
+	<update id="scrapUpdate" parameterType="hashmap">
+		update member_article
+		set
+		articleid=#{articles}
+		where memberid = #{memberid}
+	</update>
+	<insert id="scrapInsert" parameterType="hashmap">
+		insert into
+		member_article(memberid, articleid)
+		values (#{memberid},#{articles})
+	</insert>
+	<select id="getscrap" parameterType="Member" resultType="String">
+		select
+		articleid
+		from member_article
+		where memberid=#{memberid}
+	</select>
+	<select id="scrapcounter" parameterType="Member"
+		resultType="int">
+		select count(memberid)
+		from member_article
+		where
+		memberid=#{memberid}
+	</select>
+	<select id="selectMyMemberList" parameterType="int"
+		resultType="Member">
+		select * from members where memberid not in(#{memberid});
+	</select>
+	<select id="selectFriendList" parameterType="int"
+		resultType="Member">
+		select * from members where memberid in (select friendid
+		from friend where memberid = #{memberid});
+	</select>
+	<select id="selectRequestList" parameterType="int"
+		resultType="Member">
+		select * from members where memberid in (select responseid
+		from friendwait where requestid = #{memberid});
+	</select>
+	<select id="selectResponseList" parameterType="int"
+		resultType="Member">
+		select * from members where memberid in (select requestid
+		from friendwait where responseid = #{memberid});
+	</select>
+	<select id="selectNoRelationList" parameterType="int"
+		resultType="Member">
+		select * from members where memberid not in (select
+		#{memberid}
+		union all select friendid as id from friend where memberid
+		= #{memberid}
+		union all select responseid as id from friendwait where
+		requestid = #{memberid}
+		union all select requestid as id from
+		friendwait where responseid = #{memberid}
+		);
+	</select>
+	<insert id="insertFriendWait" parameterType="hashmap">
+		insert into
+		friendwait(requestid, responseid) values(#{requestid}, #{responseid});
+	</insert>
+	<delete id="deleteFriendWait" parameterType="hashmap">
+		delete from
+		friendwait where
+		requestid = #{requestid} and responseid =
+		#{responseid};
+	</delete>
+	<insert id="insertFriend" parameterType="hashmap">
+		insert into
+		friend(memberid, friendid) values(#{memberid},#{friendid});
+	</insert>
+	<delete id="deleteFriend" parameterType="hashmap">
+		delete from friend where
+		memberid = #{memberid} and friendid = #{friendid};
+	</delete>
+
+	<insert id="insertMessage" parameterType="Message">
+		insert into
+		message(sno,sendid,receiveid,articleid)
+		values
+		(#{sno},#{sendid}, #{receiveid}, #{articleid})
+	</insert>
+	
+	<delete id="deleteMessage" parameterType="int">
+		delete from message where sno=#{sno};
+		
+	</delete>
+	
+	<select id="selectMessage" parameterType="int" resultType="Message">
+		select * from message where receiveid=#{sendid};
+	</select>
+	
+	<update id="updateCompany" parameterType="hashmap">
+		update members set
+		company=#{companylist} where memberid=#{memberid};
+	</update>
+
+	<select id="selectArticleCompany" parameterType="int"
+		resultType="string">
+		select company from article where articleid=#{articleid}
+	</select>
+	<select id="selectArticleContent" parameterType="int"
+		resultType="string">
+		select content from article where articleid=#{articleid}
+	</select>
+	<insert id="insertMemberArticle" parameterType="MemberArticle">
+		insert into
+		member_article(memberid, articleid, company, content) values (#{memberid},
+		#{articleid}, #{company}, #{content})
+	</insert>
+	
+		<select id="selectMyContentList" parameterType="int" resultType="MyArticle">
+		select articleid, content from member_article where memberid=#{memberid};
+	</select>
+	
+	<select id="selectMyCompanyContentList" parameterType="MemberArticle" resultType="MyArticle">
+		select articleid, content from member_article where memberid=#{memberid} and company=#{company};
+	</select>
+	
+	<select id="selectMyArticleList" parameterType="int"
+		resultType="Article">
+		select * from article where articleid in (select
+		articleid
+		from member_article where memberid=#{memberid})
+	</select>
+	
+	<select id="selectMyCompanyArticleList"
+		parameterType="MemberArticle" resultType="Article">
+		select * from article where
+		articleid in (select articleid from member_article where memberid=
+		#{memberid} and company=#{company})
+	</select>
+	<delete id="deleteMyArticle" parameterType="MemberArticle">
+		delete from
+		member_article where memberid = #{memberid} and articleid =
+		#{articleid};
+	</delete>
+
+	<update id="saveContent" parameterType="MemberArticle">
+		update member_article set content=#{content} where memberid=#{memberid} and articleid=#{articleid};
+	</update>
+	
+	<select id="getArticleid" parameterType="int" resultType="int">
+		select articleid from member_article where memberid=#{memberid};
+	</select>
+</mapper>
